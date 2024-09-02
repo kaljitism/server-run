@@ -3,19 +3,29 @@ import 'dart:io';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
+import 'package:shelf_web_socket/shelf_web_socket.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 // Configure routes.
 final _router = Router()
   ..get('/', _rootHandler)
-  ..get('/echo/<message>', _echoHandler);
+  ..get('/echo/<message>', _echoHandler)
+  ..get('/ws', webSocketHandler(_webSocketHandler));
 
 Response _rootHandler(Request req) {
   return Response.ok('Hello, World!\n');
 }
 
 Response _echoHandler(Request request) {
+  // Echo Handler is something
   final message = request.params['message'];
   return Response.ok('$message\n');
+}
+
+void _webSocketHandler(WebSocketChannel webSocket) {
+  webSocket.stream.listen((message) {
+    webSocket.sink.add("echo $message");
+  });
 }
 
 void main(List<String> args) async {
